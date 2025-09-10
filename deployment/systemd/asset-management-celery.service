@@ -1,0 +1,27 @@
+[Unit]
+Description=Asset Management Celery Worker
+After=network.target redis.service mysql.service
+
+[Service]
+Type=forking
+User=asset_app
+Group=asset_app
+WorkingDirectory=/opt/asset_management
+Environment=PATH=/opt/asset_management/venv/bin
+EnvironmentFile=/opt/asset_management/.env
+ExecStart=/opt/asset_management/venv/bin/celery -A asset_management worker --loglevel=info --detach --pidfile=/var/run/asset_management/celery.pid
+ExecStop=/opt/asset_management/venv/bin/celery -A asset_management control shutdown
+ExecReload=/opt/asset_management/venv/bin/celery -A asset_management control reload
+PIDFile=/var/run/asset_management/celery.pid
+Restart=on-failure
+RestartSec=5
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/asset_management /var/log/asset_management /var/run/asset_management
+
+[Install]
+WantedBy=multi-user.target
